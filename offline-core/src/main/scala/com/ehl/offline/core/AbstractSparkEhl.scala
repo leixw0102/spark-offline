@@ -18,7 +18,7 @@ abstract class AbstractSparkEhl extends SparkOp with App{
     sc.hadoopConfiguration.addResource("hdfs-site.xml")
   }
 
-  abstract def operateSpark(args:Array[String],ehlConf:EhlConfiguration)(op:SparkContext=>Unit){
+   def operateSpark(args:Array[String],ehlConf:EhlConfiguration)(op:SparkContext=>Unit){
 
     //first
     val conf=new SparkConf().setAppName(getSparkAppName)//.setMaster("local[*]")

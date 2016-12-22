@@ -21,7 +21,7 @@ object VehicleTripFunction {
   /**
     * 生成过车轨迹过滤条件{
     * }
-    *  //保存格式  numb,time-cid`time-cid,time-cid`time-cid
+    *  //保存格式  numb-plate_type,time-cid`time-cid,time-cid`time-cid
     * @param rdd
     * @param path
     */

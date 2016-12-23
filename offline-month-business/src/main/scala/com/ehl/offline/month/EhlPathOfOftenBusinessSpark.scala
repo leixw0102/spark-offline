@@ -44,6 +44,7 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
     val sql = new SQLContext(op)
     val df =op.textFile(getInputs(ehlConf).mkString(","))
 
+
 //    val df = sql.createDataset(op.textFile(getInputs(ehlConf).mkString(",")))
 
   // numb,trip`num,trip`num .etc
@@ -60,17 +61,21 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
     val formater = DateTimeFormat.forPattern("yyyy-MM-dd")
     val path_prefix=conf.get(basePathKey)
     val from =conf.get(inputFromKey)
-    val end = conf.get(inputEndKey)
-    val fromDate = DateTime.parse(from,formater)
-    val endDate = DateTime.parse(end,formater)
-    val period = new Period(fromDate,endDate,PeriodType.days())
+    val realFrom = if(from.isEmpty || from == null) DateTime.now().toString("yyyy-MM-dd") else from
+//    val end = conf.get(inputEndKey)
+    println(realFrom+" realFrom")
+    val size = conf.getInt(inputSetpSize,120)
+
+    val fromDate = DateTime.parse(realFrom,formater)
+//    val endDate = DateTime.parse(end,formater)
+//    val period = new Period(fromDate,endDate,PeriodType.days())
     val array = scala.collection.mutable.ArrayBuffer[String]()
-    array.+=(path_prefix+File.separator+from)
-    for(i<- 1 to period.getDays-1){
-      val temp =path_prefix+File.separator+fromDate.plusDays(i).toString("yyyy-MM-dd");
+//    array.+=(path_prefix+File.separator+from)
+    for(i<- 0 to size){
+      val temp =path_prefix+File.separator+fromDate.plusDays(-i).toString("yyyy-MM-dd");
       array+=(temp)
     }
-    array+=(path_prefix+File.separator+end)
+//    array+=(path_prefix+File.separator+end)
     array.toArray
   }
 }

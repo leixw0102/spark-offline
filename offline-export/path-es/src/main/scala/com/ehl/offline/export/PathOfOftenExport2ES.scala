@@ -21,7 +21,9 @@ object PathOfOftenExport2ES extends AbstractSparkWithEhl with ESConfConstant{
   override def getSparkAppName: String = "export data of often path to es "+new Date().toString
 
   override def initEhlConfig: EhlConfiguration = {
-    new EhlConfiguration().addResource("es.conf")
+    val fromSystem = System.getProperty("es_conf")
+    val conf = if(fromSystem ==null || fromSystem.isEmpty) "es.conf" else fromSystem
+    new EhlConfiguration().addResource(conf)
   }
 
   operateSpark(args,ehlConf)(op=>{

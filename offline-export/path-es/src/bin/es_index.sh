@@ -35,3 +35,19 @@ createType(){
             }
      }'
 }
+
+case $1 in
+    createIndexAndType)
+        createIndexAndType
+        ;;
+    createType)
+        createType
+        ;;
+
+    *)
+        echo $"Usage: $0 {createIndexAndType|createType}"
+        exit 1
+esac
+
+exit 0
+

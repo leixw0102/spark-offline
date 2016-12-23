@@ -8,4 +8,5 @@ trait PathOfOftenConfConstant {
   val basePathKey = "offline.month.input.path.often.hdfs.path"
   val inputFromKey = "offline.month.input.path.often.from"
   val inputEndKey = "offline.month.input.path.often.end"
+  val inputSetpSize="offline.month.input.path.often.size"
 }

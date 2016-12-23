@@ -1,5 +1,4 @@
 #!/bin/sh
-
 base_dir=$(dirname $0)/..
 
 $base_dir/bin/start-often_path.sh

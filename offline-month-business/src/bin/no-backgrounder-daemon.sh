@@ -23,27 +23,29 @@ start() {
     else
 	    PID=0;
     fi
-
-    if [ ! -d "/proc/$PID" ]; then
-        echo -e "running command \n$CMD\n"
-        eval nohup $CMD > /dev/null 2>&1 &
-
-        pid=$!
-        sleep 1
-
-        if [ ! -d "/proc/$pid" ]; then
-            echo "$SERVICE_NAME not started. See log for detail."
-            rm -f $PID_PATH_NAME
-            rm -f /var/lock/subsys/$SERVICE_NAME
-            exit 1
-        else
-            echo $pid > $PID_PATH_NAME
-            echo "$SERVICE_NAME started ... PID: $!"
-            touch /var/lock/subsys/$SERVICE_NAME
-        fi
-    else
-        echo "$SERVICE_NAME is already running ..."
+    if [ -d "${BASE}/logs" ]; then
+    	mkdir  ${BASE}/logs
     fi
+    #if [ ! -d "/proc/$PID" ]; then
+        echo -e "running command \n$CMD\n"
+        eval nohup $CMD  >${BASE}/logs/${SERVICE_PID}.log
+
+        #pid=$!
+        #sleep 1
+
+        #if [ ! -d "/proc/$pid" ]; then
+         #   echo "$SERVICE_NAME not started. See log for detail."
+         #   rm -f $PID_PATH_NAME
+         #   rm -f /var/lock/subsys/$SERVICE_NAME
+         #   exit 1
+        #else
+        #    echo $pid > $PID_PATH_NAME
+        ##    echo "$SERVICE_NAME started ... PID: $!"
+        #    touch /var/lock/subsys/$SERVICE_NAME
+        #fi
+    #else
+    #    echo "$SERVICE_NAME is already running ..."
+    #fi
 }
 
 # Start service 

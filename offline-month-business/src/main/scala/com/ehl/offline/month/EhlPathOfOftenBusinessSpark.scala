@@ -4,6 +4,8 @@ import java.io.File
 
 import com.ehl.offline.common.EhlConfiguration
 import com.ehl.offline.impl.PathOfOftenFunction
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SQLContext
 import org.joda.time.{DateTime, Period, PeriodType}
 import org.joda.time.format.DateTimeFormat
@@ -42,7 +44,9 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
     */
   operateSpark(args,ehlConf)(op=>{
     val sql = new SQLContext(op)
-    val df =op.textFile(getInputs(ehlConf).mkString(","))
+    val inputs = getInputs(ehlConf,op.hadoopConfiguration)
+    if(inputs.length==0) throw new Exception("输入为空")
+    val df =op.textFile(inputs.mkString(","))
 
 
 //    val df = sql.createDataset(op.textFile(getInputs(ehlConf).mkString(",")))
@@ -57,13 +61,12 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
     * @param conf
     * @return
     */
-  override def getInputs(conf: EhlConfiguration): Array[String] = {
+  override def getInputs(conf: EhlConfiguration,hdfsConf:Configuration): Array[String] = {
     val formater = DateTimeFormat.forPattern("yyyy-MM-dd")
     val path_prefix=conf.get(basePathKey)
     val from =conf.get(inputFromKey)
     val realFrom = if(from.isEmpty || from == null) DateTime.now().toString("yyyy-MM-dd") else from
 //    val end = conf.get(inputEndKey)
-    println(realFrom+" realFrom")
     val size = conf.getInt(inputSetpSize,120)
 
     val fromDate = DateTime.parse(realFrom,formater)
@@ -71,11 +74,20 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
 //    val period = new Period(fromDate,endDate,PeriodType.days())
     val array = scala.collection.mutable.ArrayBuffer[String]()
 //    array.+=(path_prefix+File.separator+from)
+    val fs = FileSystem.get(hdfsConf)
     for(i<- 0 to size){
+
       val temp =path_prefix+File.separator+fromDate.plusDays(-i).toString("yyyy-MM-dd");
-      array+=(temp)
+      println(temp)
+      if(exitDirectoryWithHadoop(temp,fs)) array+=(temp)
+
     }
+    fs.close()
 //    array+=(path_prefix+File.separator+end)
     array.toArray
+  }
+
+  def exitDirectoryWithHadoop(path:String,fs:FileSystem): Boolean ={
+    fs.exists(new Path(path))
   }
 }

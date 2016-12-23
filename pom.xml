@@ -13,6 +13,7 @@
         <module>offline-base-data</module>
         <module>offline-month-business</module>
         <module>offline-export</module>
+        <module>month-package</module>
     </modules>
     <distributionManagement>
         <repository>

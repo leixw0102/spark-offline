@@ -1,11 +1,11 @@
 #!/bin/sh
 # loading dependency jar in lib directory
-
+currentDay=`date +%Y-%m-%d %H:%M:%S`
 base_dir=$1
 main_class=$2
 cores=$3
 memory=$4
-service_name=$5
+service_name=$5" ${currentDay}"
 executeJar=$6
 args=$7
 
@@ -17,14 +17,14 @@ do
 done
   JARS=${JARS:1}
 
-if [ -z "$BASE_OPTS" ]; then
-  BASE_OPTS="-Dbase-conf=$base_dir/conf/base.conf"
+if [ -z "$ES_OPTS" ]; then
+  ES_OPTS="-Dbase-conf=$base_dir/conf/es.conf"
 fi
 
 
 
 
-java_options="$BASE_OPTS "
+java_options="$ES_OPTS "
 #standalone
 master=spark://host236.ehl.com:7077
 #yarn clustor

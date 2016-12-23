@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>ehl-offline</artifactId>
+        <groupId>com.ehl.offline</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>month-package</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ehl.offline</groupId>
+            <artifactId>offline-month-business</artifactId>
+            <version>${version}</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+
+                    <descriptors>
+                        <descriptor>src/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>path-es</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.ehl.offline</groupId>
+                    <artifactId>path-es</artifactId>
+                    <version>${version}</version>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.8</version>
+                        <executions>
+
+                            <execution>
+                                <id>clean</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <delete dir="${project.basedir}/src/bin/">
+                                            <exclude  name="join*"></exclude>
+                                        </delete>
+                                        <delete dir="${project.basedir}/src/main/resources/">
+                                           <include name="*"/>
+                                        </delete>
+                                    </tasks>
+                                </configuration>
+
+                            </execution>
+
+                            <execution>
+                                <id>copy-offline-month</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <copy todir="${project.basedir}/src/bin" overwrite="true">
+                                            <fileset dir="${project.basedir}/../offline-month-business/src/bin"></fileset>
+                                        </copy>
+                                        <copy todir="${project.basedir}/src/main/resources" overwrite="true">
+                                            <fileset dir="${project.basedir}/../offline-month-business/src/main/resources"></fileset>
+                                        </copy>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-path-es</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <copy todir="${project.basedir}/src/bin" overwrite="true">
+                                            <fileset dir="${project.basedir}/../offline-export/path-es/src/bin"></fileset>
+                                        </copy>
+                                        <copy todir="${project.basedir}/src/main/resources" overwrite="true">
+                                            <fileset dir="${project.basedir}/../offline-export/path-es/src/main/resources"></fileset>
+                                        </copy>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+        <profile>
+            <id>path-oracle</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.ehl.offline</groupId>
+                    <artifactId>pathOfOften-oracle</artifactId>
+                    <version>${version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+</project>

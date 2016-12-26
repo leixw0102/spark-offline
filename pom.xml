@@ -144,6 +144,7 @@
                     <target>${java.version}</target>
                     <encoding>${maven.compiler.encoding}</encoding>
                     <goal>compile</goal>
+                    <maxmem>1024m</maxmem>
                 </configuration>
             </plugin>
             <plugin>
@@ -154,6 +155,7 @@
                     <encoding>${maven.compiler.encoding}</encoding>
                 </configuration>
             </plugin>
+
         </plugins>
 
     </build>

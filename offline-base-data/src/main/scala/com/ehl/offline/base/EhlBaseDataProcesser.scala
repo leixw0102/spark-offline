@@ -6,12 +6,20 @@ import com.ehl.offline.inputs.EhlFilterInputFromHdfsForShell
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SQLContext
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * 卡点对
   * Created by 雷晓武 on 2016/12/6.
   */
 object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfsForShell with BaseConfigConstant with App{
+    val defaultSplit="\t"
+
+  def getSplit={
+    val temp = ehlConf.get(split)
+    if(temp == null || temp.isEmpty) defaultSplit else temp
+  }
   /**
     * 获取spark app name
     *
@@ -46,12 +54,16 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     *  VERSION=1.0,PASSTIME=2016-11-30 16:58:41 000,CARSTATE=1,CARPLATE=鲁RNP768,PLATETYPE=2,SPEED=0,PLATECOLOR=2,LOCATIONID=-1,DEVICEID=-1,DRIVEWAY=7,DRIVEDIR=2,CAPTUREDIR=1,CARCOLOR=1,CARBRAND=99,CARBRANDZW=其它,TGSID=1012,PLATECOORD=2530,1215,2663,1247,CABCOORD=0,0,0,0,IMGID1=http://20.0.51.132:9099/image/fastdfs/group20/M00/23/0E/FAAzF1g-lUyAbXR6AAtqFZ4oge0586.jpg,IMGID2=,IMGID3=http://20.0.51.132:9099/image/fastdfs/group20/M00/23/0E/FAAzF1g-lUyAbefZAAAIquqTDOk722.jpg,
     */
   operateSpark(args,ehlConf)((session) => {
-
+//    val pro = System.getProperties.asScala.foreach(f=>println(f._1+"\t"+f._2))
     val shareData = session.broadcast(args(1))
 //    val sql = new SQLContext(session)
 //    implicit sql.implicits._
-    val lines = session.textFile(getInputs(args(0),session.hadoopConfiguration))
-      .map(f => f.split(",", 17)) //args(0)).map(f=>f.split(",",17))
+
+
+
+    val path = getInputs(args(0),session.hadoopConfiguration);
+    val lines = session.textFile(path)
+      .map(f => f.split(getSplit,17)) //args(0)).map(f=>f.split(",",17))
       .filter(f => f.length == 17)
       .filter(f => ObjectUtils.noEqual(f(3).split("=")(1), ehlConf.get(noCardKey)))
       .filter(f => ObjectUtils.noEqual(f(3).split("=")(1), ehlConf.get(errorCardKey)))
@@ -84,9 +96,10 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     //may be from if [ -z "$PUBLISH_AKKA_OPTS" ]; then
     //PUBLISH_AKKA_OPTS="-Dpublish-akka=$base_dir/conf/akka.conf"
     //fi
-    val fromSystem = System.getProperty("base-conf")
-    val conf = if(fromSystem ==null || fromSystem.isEmpty) "base.conf" else fromSystem
-    new EhlConfiguration().addResource(conf)
+
+    val fromSystem = System.getProperty("base-conf","base.conf")
+
+    new EhlConfiguration().addResource(fromSystem)
   }
 
 
@@ -94,6 +107,7 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     val fs = FileSystem.get(conf)
     val listStatus = fs.listStatus(new Path(path))
     val result = for{status <- listStatus ;if (status.getPath.toString.endsWith(".writed"))} yield {status.getPath.toString.replace(".writed","")}
+    fs.close()
     if(result.isEmpty || result.length==0) path else result.mkString(",")
   }
 }

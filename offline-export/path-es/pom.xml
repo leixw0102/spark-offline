@@ -126,32 +126,32 @@
                 </configuration>
 
             </plugin>
-            <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <configuration>
-                <descriptorRefs>
-                    <descriptorRef>jar-with-dependencies</descriptorRef>
-                </descriptorRefs>
-                <archive>
-                    <manifest>
-                        <mainClass>com.ehl.offline.export.PathOfOftenExport2ES</mainClass>
-                    </manifest>
-                </archive>
-                <!--<descriptors>-->
-                <!--<descriptor>src/assembly/assembly.xml</descriptor>-->
-                <!--</descriptors>-->
-            </configuration>
-            <executions>
-                <execution>
-                    <id>make-assembly</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>assembly</goal>
-                    </goals>
-                </execution>
-            </executions>
-            </plugin>
+            <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-assembly-plugin</artifactId>-->
+            <!--<configuration>-->
+                <!--&lt;!&ndash;<descriptorRefs>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
+                <!--&lt;!&ndash;</descriptorRefs>&ndash;&gt;-->
+                <!--&lt;!&ndash;<archive>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<manifest>&ndash;&gt;-->
+                        <!--&lt;!&ndash;<mainClass>com.ehl.offline.export.PathOfOftenExport2ES</mainClass>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</manifest>&ndash;&gt;-->
+                <!--&lt;!&ndash;</archive>&ndash;&gt;-->
+                <!--&lt;!&ndash;<descriptors>&ndash;&gt;-->
+                <!--&lt;!&ndash;<descriptor>src/assembly/assembly.xml</descriptor>&ndash;&gt;-->
+                <!--&lt;!&ndash;</descriptors>&ndash;&gt;-->
+            <!--</configuration>-->
+            <!--<executions>-->
+                <!--<execution>-->
+                    <!--<id>make-assembly</id>-->
+                    <!--<phase>package</phase>-->
+                    <!--<goals>-->
+                        <!--<goal>assembly</goal>-->
+                    <!--</goals>-->
+                <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 </project>

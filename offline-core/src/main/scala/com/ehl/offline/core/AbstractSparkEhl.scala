@@ -1,7 +1,8 @@
 package com.ehl.offline.core
 
+import java.nio.file.{Path, Paths}
+
 import com.ehl.offline.common.EhlConfiguration
-import org.apache.hadoop.conf.Configuration
 import org.apache.spark.{SparkConf, SparkContext}
 
 
@@ -14,8 +15,16 @@ abstract class AbstractSparkEhl extends SparkOp with App{
     * 設置hadoop配置
     */
   override def setHadoopConfig(sc: SparkContext): Unit = {
-    sc.hadoopConfiguration.addResource("core-site.xml")
-    sc.hadoopConfiguration.addResource("hdfs-site.xml")
+//    val core_site=System.getProperty("core-conf","core-site.xml")
+//    val hdfs_site=System.getProperty("hdfs-conf","hdfs-site.xml")
+//    val c_file = Paths.get(core_site)
+//    val h_file = Paths.get(core_site)
+//    println(core_site+"\t"+hdfs_site+"---------------")
+//
+//    sc.hadoopConfiguration.addResource(core_site)
+//    sc.hadoopConfiguration.addResource(new org.apache.hadoop.fs.Path(h_file.normalize().toAbsolutePath.toString))
+//    println(h_file.normalize().toAbsolutePath.toString)
+//    println(sc.hadoopConfiguration.get("dfs.nameservices")+"\t"+sc.hadoopConfiguration.get("fs.defaultFS")+"\t"+sc.hadoopConfiguration.get("ha.zookeeper.quorum") +"\t"+sc.hadoopConfiguration.get("dfs.namenode.rpc-address.cluster1.nn1"))
   }
 
    def operateSpark(args:Array[String],ehlConf:EhlConfiguration)(op:SparkContext=>Unit){

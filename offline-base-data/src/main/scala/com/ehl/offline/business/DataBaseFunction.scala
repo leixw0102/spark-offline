@@ -169,7 +169,7 @@ object DataBaseFunction {
     pairResult.map(f=>f._1._1+"-"+f._1._2+","+f._2+","+","+f._3).repartition(1).saveAsTextFile(path)
   }
 
-  val formaterFull = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS")
+
 
   /**
     * 过车记录进行转换
@@ -178,7 +178,7 @@ object DataBaseFunction {
     */
   def convertToTracker(f:Array[String]):Tracker={
       val timeString = (f(1).split("="))(1)
-
+    val formaterFull = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS")
       val passtime = formaterFull.parse(timeString).getTime
       val t=Tracker(passtime,
         timeString.substring(0,10),

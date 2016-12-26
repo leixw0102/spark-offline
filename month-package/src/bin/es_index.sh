@@ -35,14 +35,7 @@ createType(){
             }
      }'
 }
-deleteTypeData(){
- yesterday= date -d "-1 day ${currentDay}" +%Y-%m-%d
- curl -XDELETE http://${esIp}:9200/path_of_often_index/heze${yesterday}/_query -d '{
-    "query" : {
-        "match_all" : {}
-    }
-}'
-}
+
 case $1 in
     createIndexAndType)
         createIndexAndType
@@ -50,12 +43,9 @@ case $1 in
     createType)
         createType
         ;;
-    deleteTypeData)
-        deleteTypeData
-        ;;
 
     *)
-        echo $"Usage: $0 {createIndexAndType|createType|deleteTypeData}"
+        echo $"Usage: $0 {createIndexAndType|createType}"
         exit 1
 esac
 

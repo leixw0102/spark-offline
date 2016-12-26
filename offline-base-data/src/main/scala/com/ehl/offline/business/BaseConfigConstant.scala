@@ -8,4 +8,6 @@ trait BaseConfigConstant {
   val errorCardKey="base.filter.card.2"
 
   val baseFileSuffix="base.file.suffix"
+
+  val split="base.file.content.split"
 }

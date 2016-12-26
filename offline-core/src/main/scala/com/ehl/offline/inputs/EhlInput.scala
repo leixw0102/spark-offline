@@ -23,7 +23,7 @@ trait EhlInputForConf{
   * 从配置文件读取,依赖hdsf文件判断  //TODO
   * TODO 跟EhlInputForConf 合并
   */
-trait EhlInputConfForHdfsConf{
+trait EhlInputConfForHdfsConf extends EhlInputForConf{
     def getInputs(conf:EhlConfiguration,hdfsConf:Configuration):Array[String]
 }
 

@@ -1,0 +1,4 @@
+linux crontab 配置
+30 21 * * * /usr/local/etc/rc.d/lighttpd restart
+
+03 * * * *

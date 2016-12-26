@@ -17,10 +17,7 @@
             <outputDirectory>/conf</outputDirectory>
             <fileMode></fileMode>
         </fileSet>
-        <!--<fileSet>-->
-            <!--<directory>src/logs</directory>-->
-            <!--<outputDirectory>/logs</outputDirectory>-->
-        <!--</fileSet>-->
+
       </fileSets>
 
     <dependencySets>

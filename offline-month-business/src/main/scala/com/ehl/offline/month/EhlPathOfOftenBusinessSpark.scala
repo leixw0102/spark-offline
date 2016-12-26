@@ -76,11 +76,9 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
 //    array.+=(path_prefix+File.separator+from)
     val fs = FileSystem.get(hdfsConf)
     for(i<- 0 to size){
-
       val temp =path_prefix+File.separator+fromDate.plusDays(-i).toString("yyyy-MM-dd");
       println(temp)
       if(exitDirectoryWithHadoop(temp,fs)) array+=(temp)
-
     }
     fs.close()
 //    array+=(path_prefix+File.separator+end)

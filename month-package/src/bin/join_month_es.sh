@@ -10,7 +10,6 @@ $base_dir/bin/es_index.sh createType
 ##delete
 $base_dir/bin/es_index.sh deleteType
 
-
 #export data to es
 $base_dir/bin/start-data2es.sh
 

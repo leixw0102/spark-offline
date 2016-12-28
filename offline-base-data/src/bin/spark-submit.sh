@@ -34,7 +34,7 @@ fi
 
 java_options="$BASE_OPTS $HDFS_OPTS $CORE_OPTS"
 #standalone
-master=spark://host225:7077
+master=$8
 #yarn clustor
 #master=yarn
 #--deploy-mode=client

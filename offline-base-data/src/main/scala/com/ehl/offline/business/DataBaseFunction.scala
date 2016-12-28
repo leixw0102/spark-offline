@@ -1,6 +1,7 @@
 package com.ehl.offline.business
 
 import java.text.SimpleDateFormat
+import java.util.Date
 
 import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
@@ -83,6 +84,7 @@ class DataBaseFunction extends Serializable{
   val granula = 1 * 60 * 60 * 1000 // 粒度1小时
   /**
     * 根据时间过滤
+    *
     * @param vs
     * @return
     */
@@ -133,6 +135,7 @@ object DataBaseFunction {
     *
     * //TODO 根据轨迹找到
     * 对数据进行生成
+    *
     * @param q
     * @return
     */
@@ -145,6 +148,7 @@ object DataBaseFunction {
   //conf  获取配置文件
   /**
     * 对数据进行ETL过滤
+    *
     * @param rdd
     * @return
     */
@@ -159,6 +163,7 @@ object DataBaseFunction {
   /**
     *卡点对逻辑处理
     * 格式 short-short,int,long
+    *
     * @param pair
     * @param path
     */
@@ -173,39 +178,70 @@ object DataBaseFunction {
 
   /**
     * 过车记录进行转换
+    *
     * @param f
     * @return
     */
   def convertToTracker(f:Array[String]):Tracker={
       val timeString = (f(1).split("="))(1)
-    val formaterFull = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS")
-      val passtime = formaterFull.parse(timeString).getTime
-      val t=Tracker(passtime,
-        timeString.substring(0,10),
+      val passtime = toDate(timeString,f)
+      val t=Tracker(passtime._1,
+        passtime._2,
         f(3).split("=")(1),
-        toInt(f(4).split("=")(1)),
-        (f(15).split("=")(1)).toShort,
-        toDouble(f(5).split("=")(1)),
-        toInt(f(10).split("=")(1)),
-        toInt(f(9).split("=")(1)))
+        toInt(f(4).split("=")(1),f),
+        toShort(f(15).split("=")(1),f),
+        toDouble(f(5).split("=")(1),f),
+        toInt(f(10).split("=")(1),f),
+        toInt(f(9).split("=")(1),f))
     t
 
   }
 
-
-  private def toDouble(input:String)={
-    try{
-      input.toDouble
+  private def toDate(date:String,f:Array[String]):(Long,String) = {
+    try {
+      val formaterFull = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS")
+      (formaterFull.parse(date).getTime,date.substring(0,10))
+//      if(date.length<10)
     }catch {
-      case e:Exception=>0.0
+      case ex:Exception=>{
+        println(f.mkString(","))
+        val d=new Date()
+        (d.getTime,new DateTime(d).toString("yyyy-MM-dd"))
+      }
     }
   }
 
-  private def toInt(input:String)={
+  private def toDouble(input:String,f:Array[String])={
+    try{
+      input.toDouble
+    }catch {
+
+      case e:Exception=>{
+        println(f.mkString(","))
+        0.0
+      }
+    }
+  }
+
+  private def toInt(input:String,f:Array[String])={
     try{
       input.toInt
     }catch {
-      case e:Exception=>0
+      case e:Exception=>{
+        println(f.mkString(","))
+        0
+      }
+    }
+  }
+
+  private def toShort(input:String,f:Array[String])={
+    try{
+      input.toShort
+    }catch {
+      case e:Exception=>{
+        println(f.mkString(","))
+        0.toShort
+      }
     }
   }
 }

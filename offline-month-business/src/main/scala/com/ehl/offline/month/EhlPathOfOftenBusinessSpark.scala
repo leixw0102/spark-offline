@@ -88,4 +88,5 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
   def exitDirectoryWithHadoop(path:String,fs:FileSystem): Boolean ={
     fs.exists(new Path(path))
   }
+
 }

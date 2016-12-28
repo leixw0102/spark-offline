@@ -25,6 +25,7 @@ trait EhlInputForConf{
   */
 trait EhlInputConfForHdfsConf extends EhlInputForConf{
     def getInputs(conf:EhlConfiguration,hdfsConf:Configuration):Array[String]
+    def getInputs(conf:EhlConfiguration):Array[String]=getInputs(conf,new Configuration())
 }
 
 /**

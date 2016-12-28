@@ -25,7 +25,7 @@ fi
 
 java_options="$MONTH_OPTS"
 #standalone
-master=spark://host225:7077
+master=$8
 #yarn clustor
 #master=yarn
 #--deploy-mode=client

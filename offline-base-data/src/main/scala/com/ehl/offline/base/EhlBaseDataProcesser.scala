@@ -1,4 +1,6 @@
 package com.ehl.offline.base
+import java.util.Date
+
 import com.ehl.offline.business.{BaseConfigConstant, DataBaseFunction, VehicleTripFunction}
 import com.ehl.offline.common.{EhlConfiguration, ObjectUtils}
 import com.ehl.offline.core.AbstractSparkEhl
@@ -6,6 +8,7 @@ import com.ehl.offline.inputs.EhlFilterInputFromHdfsForShell
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SQLContext
+
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
@@ -16,16 +19,18 @@ import scala.collection.JavaConverters._
 object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfsForShell with BaseConfigConstant with App{
     val defaultSplit="\t"
 
-  def getSplit={
-    val temp = ehlConf.get(split)
-    if(temp == null || temp.isEmpty) defaultSplit else temp
+  def getSplit(conf:EhlConfiguration):String={
+    val temp = conf.get(split)
+    if(temp == null || temp.isEmpty)
+    { println(".....")
+      defaultSplit} else {temp}
   }
   /**
     * 获取spark app name
     *
     * @return
     */
-  override def getSparkAppName: String = "ehl-base-data-processer by lxw"
+  override def getSparkAppName: String = "ehl-base-data-processer by lxw"+new Date().toString
 
   /**
     * VERSION=1.0,
@@ -58,12 +63,11 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     val shareData = session.broadcast(args(1))
 //    val sql = new SQLContext(session)
 //    implicit sql.implicits._
-
-
-
     val path = getInputs(args(0),session.hadoopConfiguration);
+
+    val s=getSplit(ehlConf)
     val lines = session.textFile(path)
-      .map(f => f.split(getSplit,17)) //args(0)).map(f=>f.split(",",17))
+      .map(f => f.split(s,17)) //args(0)).map(f=>f.split(",",17))
       .filter(f => f.length == 17)
       .filter(f => ObjectUtils.noEqual(f(3).split("=")(1), ehlConf.get(noCardKey)))
       .filter(f => ObjectUtils.noEqual(f(3).split("=")(1), ehlConf.get(errorCardKey)))
@@ -99,7 +103,9 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
 
     val fromSystem = System.getProperty("base-conf","base.conf")
 
-    new EhlConfiguration().addResource(fromSystem)
+    val conf = new EhlConfiguration().addResource(fromSystem)
+    conf.foreach()
+    conf;
   }
 
 

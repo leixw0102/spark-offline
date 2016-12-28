@@ -1,5 +1,5 @@
 #!/bin/sh
-currentDay=`date +%Y-%m-%d`
+yesterday=`date -d '-1 day' +%Y-%m-%d`
 esIp=10.150.27.248
 createIndexAndType(){
 curl -XPOST ${esIp}:9200/path_of_often_index -d '{
@@ -21,8 +21,8 @@ curl -XPOST ${esIp}:9200/path_of_often_index -d '{
 }
 
 createType(){
-    curl -XPOST ${esIp}:9200/path_of_often_index/heze${currentDay}/_mapping -d '{
-            "heze'${currentDay}'" : {
+    curl -XPOST ${esIp}:9200/path_of_often_index/heze${yesterday}/_mapping -d '{
+            "heze'${yesterday}'" : {
                  "properties" : {
                         "id" : { "type" : "string", "index" : "not_analyzed" } ,
                          "numb" : { "type" : "string", "index" : "not_analyzed" } ,
@@ -35,3 +35,29 @@ createType(){
             }
      }'
 }
+beforeYesterday=`date -d '-2 day' +%Y-%m-%d`
+deleteType(){
+curl -XDELETE http://${esIp}:9200/path_of_often_index/heze${beforeYesterday}/_query -d '{
+    "query" : {
+        "match_all" : {}
+    }
+}'
+
+}
+case $1 in
+    createIndexAndType)
+        createIndexAndType
+        ;;
+    createType)
+        createType
+        ;;
+    deleteType)
+        deleteType
+        ;;
+    *)
+        echo $"Usage: $0 {createIndexAndType|createType|deleteType}"
+        exit 1
+esac
+
+exit 0
+

@@ -18,12 +18,22 @@ done
   JARS=${JARS:1}
 
 if [ -z "$ES_OPTS" ]; then
- ES_OPTS="-Des-conf=$base_dir/conf/es.conf"
+  ES_OPTS="-Des-conf=$base_dir/conf/es.conf"
+fi
+
+if [ -z "$CORE_OPTS" ]; then
+  CORE_OPTS="-Dcore-conf=$base_dir/conf/core-site.xml"
+fi
+
+if [ -z "$HDFS_OPTS" ]; then
+  HDFS_OPTS="-Dhdfs-conf=$base_dir/conf/hdfs-site.xml"
 fi
 
 
 
-java_options="$ES_OPTS"
+
+java_options="$ES_OPTS $HDFS_OPTS $CORE_OPTS"
+
 #standalone
 master=$8
 #yarn clustor

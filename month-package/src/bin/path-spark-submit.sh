@@ -17,13 +17,13 @@ do
 done
   JARS=${JARS:1}
 
-if [ -z "$ES_OPTS" ]; then
- ES_OPTS="-Des-conf=$base_dir/conf/es.conf"
+if [ -z "$MONTH_OPTS" ]; then
+ MONTH_OPTS="-Dmonth_business=$base_dir/conf/month_business.conf"
 fi
 
 
 
-java_options="$ES_OPTS"
+java_options="$MONTH_OPTS"
 #standalone
 master=$8
 #yarn clustor

@@ -27,10 +27,10 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
     * @return
     */
   override def initEhlConfig: EhlConfiguration = {
-    val fromSystem = System.getProperty("month_business")
-    val conf = if(fromSystem ==null || fromSystem.isEmpty) "month_business.conf" else fromSystem
-    new EhlConfiguration().addResource(conf)
-
+    val fromSystem = System.getProperty("month_business","month_business.conf")
+    val conf= new EhlConfiguration().addResource(fromSystem)
+    conf.foreach()
+    conf
   }
 
   /**

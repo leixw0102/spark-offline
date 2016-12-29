@@ -8,6 +8,7 @@ import com.ehl.offline.es.ESConfConstant
 import org.apache.spark.sql.SQLContext
 import org.elasticsearch.spark.sql._
 import org.joda.time.DateTime
+import scala.collection.JavaConversions._
 /**
   * Created by 雷晓武 on 2016/12/21.
   */
@@ -21,14 +22,16 @@ object PathOfOftenExport2ES extends AbstractSparkWithEhl with ESConfConstant{
   override def getSparkAppName: String = "export data of often path to es "+new Date().toString
 
   override def initEhlConfig: EhlConfiguration = {
-    val fromSystem = System.getProperty("es_conf")
-    val conf = if(fromSystem ==null || fromSystem.isEmpty) "es.conf" else fromSystem
-    new EhlConfiguration().addResource(conf)
+    val fromSystem = System.getProperty("es-conf","es.conf")
+
+    val conf = new EhlConfiguration().addResource(fromSystem)
+    conf.foreach()
+    conf
   }
 
   operateSpark(args,ehlConf)(op=>{
-
     val sql = new SQLContext(op)
+
     import sql.implicits._
 //    sql.read.parquet(args(0))
     val load = sql.read

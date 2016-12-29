@@ -38,7 +38,8 @@ abstract class AbstractSparkEhl extends SparkOp with App{
       //保存hadoop
 
       //     val sc = session.sparkContext
-      setHadoopConfig(session);
+      setHadoopConfig(session)
+
       op(session)
     }catch{
       case ex:Exception=>ex.printStackTrace()

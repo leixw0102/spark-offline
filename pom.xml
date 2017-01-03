@@ -14,6 +14,7 @@
         <module>offline-month-business</module>
         <module>offline-export</module>
         <module>month-package</module>
+        <module>driver-vehicle-association</module>
     </modules>
     <distributionManagement>
         <repository>

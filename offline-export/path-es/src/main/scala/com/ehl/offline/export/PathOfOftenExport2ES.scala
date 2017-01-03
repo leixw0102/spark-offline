@@ -39,7 +39,7 @@ object PathOfOftenExport2ES extends AbstractSparkWithEhl with ESConfConstant{
       load.map(f=>{
         val numb_plate = f.getString(0).split("-")
         PathOfOften(numb_plate(0),numb_plate(1).toInt,f.getString(1),f.getString(2),f.getString(3),f.getInt(4))
-      }).toDF().saveToEs(ehlConf.get(exportPathIndexType)+new DateTime().plusDays(-1).toString("yyyy-MM-dd"))
+      }).toDF().saveToEs(ehlConf.get(exportPathIndexType))
 
   })
 }

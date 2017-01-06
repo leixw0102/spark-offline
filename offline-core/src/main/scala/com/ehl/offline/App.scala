@@ -28,11 +28,7 @@ object App {
     def m2[U <: S](s: S): U = {m1.runtimeClass.newInstance.asInstanceOf[U]} //逆变，上界
   }
 
-  class A {
-    def abc[x : AutoCloseable](c:x)(handler:x=>Unit): Unit ={
-      handler(c)
-    }
-  }
+
 
 
 }

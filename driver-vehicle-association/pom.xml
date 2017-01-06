@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
+
         <module>test</module>
     </modules>
     <artifactId>driver-vehicle-association</artifactId>

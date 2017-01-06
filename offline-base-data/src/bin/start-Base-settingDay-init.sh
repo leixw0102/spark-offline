@@ -9,7 +9,7 @@ do
    file_name=${inputDay}
    s=`date -d '-${i} day' +%Y-%m-%d`
    echo $s
-    $base_dir/bin/base-spark-submit ${s}
+    $base_dir/bin/no-backgrounder-base-spark-submit ${s}
 done
 
 

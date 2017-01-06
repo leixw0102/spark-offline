@@ -23,7 +23,7 @@ start() {
     else
 	    PID=0;
     fi
-    if [ ! -d "${BASE}/logs" ]; then
+    if [ -d "${BASE}/logs" ]; then
     	mkdir  ${BASE}/logs
     fi
     #if [ ! -d "/proc/$PID" ]; then

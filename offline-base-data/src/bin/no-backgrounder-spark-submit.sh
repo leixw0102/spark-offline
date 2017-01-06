@@ -1,11 +1,11 @@
 #!/bin/sh
 # loading dependency jar in lib directory
-currentDay=`date +%s%N`
+
 base_dir=$1
 main_class=$2
 cores=$3
 memory=$4
-service_name=$5"${currentDay}"
+service_name=$5
 executeJar=$6
 args=$7
 
@@ -17,13 +17,11 @@ do
 done
   JARS=${JARS:1}
 
-if [ -z "$MONTH_OPTS" ]; then
- MONTH_OPTS="-Dmonth_business=$base_dir/conf/month_business.conf"
+if [ -z "$BASE_OPTS" ]; then
+  BASE_OPTS="-Dbase-conf=$base_dir/conf/base.conf"
 fi
 
-
-
-java_options="$MONTH_OPTS"
+java_options="$BASE_OPTS "
 #standalone
 master=$8
 #yarn clustor

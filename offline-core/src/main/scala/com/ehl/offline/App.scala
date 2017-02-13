@@ -1,7 +1,9 @@
 package com.ehl.offline
 import java.util.concurrent.TimeUnit
 
-import scala.collection.JavaConverters._
+import com.ehl.offline.metrics.EhlMetricsSystem
+import org.apache.hadoop.metrics2.MetricsSystem
+
 import scala.reflect.ClassTag
 /**
  * @author ${user.name}
@@ -11,11 +13,13 @@ object App {
   def foo(x : Array[String]) = x.foldLeft("")((a,b) => a + b)
   
   def main(args : Array[String]) {
-   println( TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES).toInt)
-    val c:Consumer[Animal,Bird] = new Consumer[Animal,Bird]()
-    val c2:Consumer[Bird,Animal] = c
-    c2.m1(new Animal)
-    c2.m2(new Bird)
+
+    EhlMetricsSystem.createMetricsSystem
+//   println( TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES).toInt)
+//    val c:Consumer[Animal,Bird] = new Consumer[Animal,Bird]()
+//    val c2:Consumer[Bird,Animal] = c
+//    c2.m1(new Animal)
+//    c2.m2(new Bird)
   }
 
   class Animal {}

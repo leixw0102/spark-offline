@@ -17,26 +17,25 @@
 
 package com.ehl.offline.metrics.sink
 
-import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import com.codahale.metrics.{ConsoleReporter, MetricRegistry}
-import org.apache.spark.metrics.MetricsSystem
+import com.ehl.offline.common.EhlConfiguration
 
-private class ConsoleSink(val property: Properties, val registry: MetricRegistry,
-                                 securityMgr: SecurityManager) extends Sink {
+class ConsoleSink(val property: EhlConfiguration, val registry: MetricRegistry,
+                          securityMgr: SecurityManager) extends Sink {
   val CONSOLE_DEFAULT_PERIOD = 10
   val CONSOLE_DEFAULT_UNIT = "SECONDS"
 
   val CONSOLE_KEY_PERIOD = "period"
   val CONSOLE_KEY_UNIT = "unit"
 
-  val pollPeriod = Option(property.getProperty(CONSOLE_KEY_PERIOD)) match {
+  val pollPeriod = Option(property.get(CONSOLE_KEY_PERIOD)) match {
     case Some(s) => s.toInt
     case None => CONSOLE_DEFAULT_PERIOD
   }
 
-  val pollUnit: TimeUnit = Option(property.getProperty(CONSOLE_KEY_UNIT)) match {
+  val pollUnit: TimeUnit = Option(property.get(CONSOLE_KEY_UNIT)) match {
     case Some(s) => TimeUnit.valueOf(s.toUpperCase())
     case None => TimeUnit.valueOf(CONSOLE_DEFAULT_UNIT)
   }

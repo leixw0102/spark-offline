@@ -1,9 +1,13 @@
 package com.ehl.offline.month
 
 import java.io.File
+import java.util.Date
 
 import com.ehl.offline.common.EhlConfiguration
+import com.ehl.offline.conf.PathOfOftenConfConstant
+import com.ehl.offline.core.AbstractSparkEhl
 import com.ehl.offline.impl.PathOfOftenFunction
+import com.ehl.offline.inputs.EhlInputConfForHdfsConf
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.SQLContext
@@ -13,25 +17,25 @@ import org.joda.time.format.DateTimeFormat
 /**
   * Created by 雷晓武 on 2016/12/14.
   */
-object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
+object EhlPathOfOftenBusinessSpark extends AbstractMonth with PathOfOftenConfConstant with EhlInputConfForHdfsConf{
   /**
     * 获取spark app name
     *
     * @return
     */
-  override def getSparkAppName: String = "the path of the often by leixw"
+  override def getSparkAppName: String = "the path of the often by leixw"+new Date().toLocaleString
 
-  /**
-    * init conf
-    *
-    * @return
-    */
-  override def initEhlConfig: EhlConfiguration = {
-    val fromSystem = System.getProperty("month_business","month_business.conf")
-    val conf= new EhlConfiguration().addResource(fromSystem)
-    conf.foreach()
-    conf
-  }
+//  /**
+//    * init conf
+//    *
+//    * @return
+//    */
+//  override def initEhlConfig: EhlConfiguration = {
+//    val fromSystem = System.getProperty("month_business","month_business.conf")
+//    val conf= new EhlConfiguration().addResource(fromSystem)
+//    conf.foreach()
+//    conf
+//  }
 
   /**
     *  长走路线
@@ -85,8 +89,6 @@ object EhlPathOfOftenBusinessSpark extends PathBusinessTrait{
     array.toArray
   }
 
-  def exitDirectoryWithHadoop(path:String,fs:FileSystem): Boolean ={
-    fs.exists(new Path(path))
-  }
+
 
 }

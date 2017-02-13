@@ -1,8 +1,8 @@
 package com.ehl.offline.core
 
-import java.nio.file.{Path, Paths}
 
 import com.ehl.offline.common.EhlConfiguration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.{SparkConf, SparkContext}
 
 
@@ -10,6 +10,7 @@ import org.apache.spark.{SparkConf, SparkContext}
   * Created by 雷晓武 on 2016/12/6.
   */
 abstract class AbstractSparkEhl extends SparkOp with App{
+
 
   /**
     * 設置hadoop配置
@@ -47,6 +48,10 @@ abstract class AbstractSparkEhl extends SparkOp with App{
       //end
       session.stop()
     }
+  }
+
+  def exitDirectoryWithHadoop(path:String,fs:FileSystem): Boolean ={
+    fs.exists(new Path(path))
   }
 
 }

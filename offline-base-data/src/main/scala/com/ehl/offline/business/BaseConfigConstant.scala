@@ -10,4 +10,10 @@ trait BaseConfigConstant {
   val baseFileSuffix="base.file.suffix"
 
   val split="base.file.content.split"
+
+  val timeStrategy = "time.strategy.default"
+
+  val timeDefault="time.strategy.time.default"
+
+
 }

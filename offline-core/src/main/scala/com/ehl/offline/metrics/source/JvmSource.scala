@@ -20,7 +20,7 @@ package com.ehl.offline.metrics.source
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.jvm.{GarbageCollectorMetricSet, MemoryUsageGaugeSet}
 
-private class JvmSource extends Source {
+class JvmSource extends Source {
   override val sourceName = "jvm"
   override val metricRegistry = new MetricRegistry()
 

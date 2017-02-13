@@ -1,4 +1,5 @@
 package com.ehl.offline.base
+
 import java.text.MessageFormat
 import java.util.Date
 
@@ -6,18 +7,16 @@ import com.ehl.offline.business.{BaseConfigConstant, DataBaseFunction, VehicleTr
 import com.ehl.offline.common.{EhlConfiguration, ObjectUtils}
 import com.ehl.offline.core.AbstractSparkEhl
 import com.ehl.offline.inputs.EhlFilterInputFromHdfsForShell
-import com.ehl.offline.time.strategy.{TimeLine, TimeStrategy}
+import com.ehl.offline.time.strategy.TimeLine
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.joda.time.DateTime
 
-
 /**
-  * 卡点对
-  * Created by 雷晓武 on 2016/12/6.
+  * Created by 雷晓武 on 2017/1/22.
   */
-object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfsForShell with BaseConfigConstant with App{
-    val defaultSplit="\t"
+object EhlBaseTrackerSpark extends AbstractSparkEhl with EhlFilterInputFromHdfsForShell with BaseConfigConstant with App{
+  val defaultSplit="\t"
 
   def getSplit(conf:EhlConfiguration):String={
     val temp = conf.get(split)
@@ -31,7 +30,8 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     * @return
     */
   override def getSparkAppName: String = "ehl-base-data-processer by lxw"+new Date().toString
-  private  val parser = new ParserImpl()
+  private  val parser = new TrackerParserImpl()
+
   /**
     * VERSION=1.0,
     * PASSTIME=2016-11-30 16:58:41 000,
@@ -59,56 +59,39 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     *  VERSION=1.0,PASSTIME=2016-11-30 16:58:41 000,CARSTATE=1,CARPLATE=鲁RNP768,PLATETYPE=2,SPEED=0,PLATECOLOR=2,LOCATIONID=-1,DEVICEID=-1,DRIVEWAY=7,DRIVEDIR=2,CAPTUREDIR=1,CARCOLOR=1,CARBRAND=99,CARBRANDZW=其它,TGSID=1012,PLATECOORD=2530,1215,2663,1247,CABCOORD=0,0,0,0,IMGID1=http://20.0.51.132:9099/image/fastdfs/group20/M00/23/0E/FAAzF1g-lUyAbXR6AAtqFZ4oge0586.jpg,IMGID2=,IMGID3=http://20.0.51.132:9099/image/fastdfs/group20/M00/23/0E/FAAzF1g-lUyAbefZAAAIquqTDOk722.jpg,
     */
   operateSpark(args,ehlConf)((session) => {
-//    val pro = System.getProperties.asScala.foreach(f=>println(f._1+"\t"+f._2))
-   parser.parser(args.toList)
-    println(parser.toString())
+    //    val pro = System.getProperties.asScala.foreach(f=>println(f._1+"\t"+f._2))
+    parser.parser(args.toList)
 
     val shareData = session.broadcast(parser.shareData)
-//    val sql = new SQLContext(session)
-//    implicit sql.implicits._
-    val path = getInputs(parser.input,session.hadoopConfiguration);
+    //    val sql = new SQLContext(session)
+    //    implicit sql.implicits._
+    val path = getInputs(parser.input, session.hadoopConfiguration);
 
-    val s=getSplit(ehlConf)
+    val s = getSplit(ehlConf)
     val lines = session.textFile(path)
-      .map(f => f.split(s,17)) //args(0)).map(f=>f.split(",",17))
+      .map(f => f.split(s, 17)) //args(0)).map(f=>f.split(",",17))
       .filter(f => f.length == 17)
       .filter(f => ObjectUtils.noEqual(f(3).split("=")(1), ehlConf.get(noCardKey)))
       .filter(f => ObjectUtils.noEqual(f(3).split("=")(1), ehlConf.get(errorCardKey)))
       .filter(f => f(3).split("=")(1) != None)
       .map(f => DataBaseFunction.convertToTracker(f))
       .filter(f => shareData.value.equals(f.day)
-      ).groupBy(value=>value.numb+"-"+value.plateType)
+      ).groupBy(value => value.numb + "-" + value.plateType)
     //lines 为分组过车轨迹
     val cache = lines.cache()
-    val filterResult = DataBaseFunction.generatedPairAndRemoveDirtyData(cache);
+    val before = ehlConf.getInt("time.strategy.avg.before.day",1)
+    val avgPath = ehlConf.get("time.strategy.avg.input","/app/base/history_time/{0}")
+    val day =new DateTime(new Date()).plusDays(-before).toString("yyyy-MM-dd")
+    val historyPath =MessageFormat.format(avgPath,day)
+    val cacheRdd = session.textFile(historyPath).map(f=>{
+      val lines = f.split("\t")
+      (lines(0),lines(1).toLong)
+    })
+    val broadcast = session.broadcast(cacheRdd.collectAsMap())
+    val timeLine = TimeLine.getClass(ehlConf,broadcast)
 
-    //过车卡点对生成保存  格式 short-short,startTime,endTime,timestamp`startTime,endTime,timestamp...etc
-//    if(! parser.cardsOutput.isEmpty && !parser.cardsOutput.equals("")){
-      DataBaseFunction.pairAndSave(filterResult,parser.cardsOutput);
-//    }
-
-
-    //根据规则生成过车轨
-
-    //后期再重构， //保存格式  numb,time-cid`time-cid,time-cid`time-cid
-//    if(! parser.vehicleLineOutput.isEmpty && !parser.vehicleLineOutput.equals("")){
-//      val before = ehlConf.getInt("time.strategy.avg.before.day",1)
-//      val avgPath = ehlConf.get("time.strategy.avg.input","/app/base/history_time/{0}")
-//        val day =new DateTime(new Date()).plusDays(-before).toString("yyyy-MM-dd")
-//        val path =MessageFormat.format(avgPath,day)
-//        val cacheRdd = session.textFile(path).map(f=>{
-//          val lines = f.split("\t")
-//          (lines(0),lines(1).toLong)
-//        })
-//      val broadcast = session.broadcast(cacheRdd.collectAsMap())
-//      val timeLine = TimeLine.getClass(ehlConf,broadcast)
-//
-//      VehicleTripFunction.generatedTripTracker(cache,parser.vehicleLineOutput,timeLine)
-//    }
-
+    VehicleTripFunction.generatedTripTracker(cache,parser.vehicleLineOutput,timeLine)
   })
-
-
   /**
     * bug
     *
@@ -126,8 +109,6 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     conf.foreach()
     conf;
   }
-
-
   override def getInputs(path: String, conf: Configuration): String = {
     val fs = FileSystem.get(conf)
     val listStatus = fs.listStatus(new Path(path))
@@ -135,10 +116,9 @@ object EhlBaseDataProcesser extends AbstractSparkEhl with EhlFilterInputFromHdfs
     fs.close()
     if(result.isEmpty || result.length==0) path else result.mkString(",")
   }
-
 }
 
-class ParserImpl extends Serializable{
+class TrackerParserImpl extends Serializable{
 
   var input = ""
   var cardsOutput = ""
@@ -167,12 +147,12 @@ class ParserImpl extends Serializable{
     case ("-share")::value ::tail=>
       shareData = value
       parser(tail)
-    case ("-cards") :: value :: tail=>
-      cardsOutput = value
-      parser(tail)
-//    case ("-vl") :: value :: tail =>
-//      vehicleLineOutput = value;
+//    case ("-cards") :: value :: tail=>
+//      cardsOutput = value
 //      parser(tail)
+    case ("-vl") :: value :: tail =>
+      vehicleLineOutput = value;
+      parser(tail)
     case ("--help") :: tail =>
       printUsageAndExit(0)
 

@@ -1,5 +1,7 @@
 package com.ehl.offline
 
+import java.util.Date
+
 import com.ehl.offline.common.EhlConfiguration
 
 
@@ -11,8 +13,19 @@ object App {
   def foo(x : Array[String]) = x.foldLeft("")((a,b) => a + b)
 
   def main(args : Array[String]) {
-    val a=new EhlConfiguration().addResource("offline-base-data\\..\\offline-base-data\\src\\main\\resources\\base.conf")
-    a.foreach()
+//    val time1 = new Date(1481805643000L).toLocaleString
+//    val time2 = new Date(1481806672000L).toLocaleString
+//    println(time1+"\t"+time2 +"\t"+1029000)
+//    println(Math.floor(2*0.03).toInt)
+    val a = List(1,2)
+    a.drop(1).foreach(println)
+//    a.sortWith((a,b)=>a-b>0).foreach(println)
+//    val line ="1-2,12345,23456,1000`12345,12345,0"
+//    println(line.take(line.indexOf(",")))
+//    val other = line.drop(line.indexOf(",")+1)
+//    println(other)
+//    val a=new EhlConfiguration().addResource("offline-base-data\\..\\offline-base-data\\src\\main\\resources\\base.conf")
+//    a.foreach()
 //    val array = ListBuffer[String]()
 //    array +="abc"
 //    array +="sdf"

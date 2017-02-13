@@ -20,6 +20,8 @@ case class BayPair(start: Short, end: Short, // 起始卡点，结束卡点
 
   val bayPair_timePair=(startTime,endTime)
 
+  override def toString=startTime+","+endTime+","+timestamp
+
 }// 过车时间{
 
 
@@ -89,12 +91,15 @@ class DataBaseFunction extends Serializable{
     * @return
     */
   def filterBayPairTime(vs: Iterable[BayPair]):Iterable[Long]={
-    vs.filter(x=>{
-      val curtime = x.endTime
-      val bound = curtime / granula
-      val time = new DateTime(bound * granula).toString("HH").toInt
-      (time>=PairConf.getStartH && time<=PairConf.getEndH)
-    }).filter(p=>p.timestamp != 0).map(data=>data.timestamp)
+    vs
+//      .filter(x=>{
+//      val curtime = x.endTime
+//      val bound = curtime / granula
+//      val time = new DateTime(bound * granula).toString("HH").toInt
+//      (time>=PairConf.getStartH && time<=PairConf.getEndH)
+//    })
+      .filter(p=>p.timestamp != 0)
+      .map(data=>data.timestamp)
   }
 
   def getCollectionFirstLong(collection:Iterable[Long]):Long={
@@ -112,14 +117,15 @@ class DataBaseFunction extends Serializable{
     *
     * @param pair
     */
-  private def countBayPair(pair:RDD[((Short,Short),Iterable[BayPair])]):RDD[((Short,Short),Int,Long)]={
-    val pair_size=pair.map(f=>(f._1,f._2.size)).sortBy(f=>f._2,false)
-
-    val pair_times=pair.map(f=>{
-      (f._1,filterBayPairTime(f._2))
-    }).filter(f=>f._2.size !=0 )
-      .map(f=>(f._1,f._2.sum/f._2.size))
-    pair_size.cogroup(pair_times).map(f=>(f._1,getCollectionFirstInt(f._2._1),getCollectionFirstLong(f._2._2)))
+  private def countBayPair(pair:RDD[((Short,Short),Iterable[BayPair])])={
+    pair.mapValues(f=>f.mkString("`"))
+//    val pair_size=pair.map(f=>(f._1,f._2.size)).sortBy(f=>f._2,false)
+//
+//    val pair_times=pair.map(f=>{
+//      (f._1,filterBayPairTime(f._2))
+//    }).filter(f=>f._2.size !=0 )
+//      .map(f=>(f._1,f._2.sum/f._2.size))
+//    pair_size.cogroup(pair_times).map(f=>(f._1,getCollectionFirstInt(f._2._1),getCollectionFirstLong(f._2._2)))
   }
 
 
@@ -141,9 +147,12 @@ object DataBaseFunction {
     */
   def convertToPair(q: Iterable[Tracker]):Iterator[BayPair] = {
 
-    q.toList.sortBy { x => x.passTime }.sliding(2,1).filter(pairlist=> {
-      pairlist.head.cid != pairlist.last.cid &&(pairlist.last.passTime - pairlist.head.passTime) / 60000 < 30 && (pairlist.last.passTime - pairlist.head.passTime) / 1000 > 3
-    }).map(x=>BayPair(x.head.cid,x.last.cid,x.head.passTime,x.last.passTime,x.last.passTime-x.head.passTime))
+    q.toList.sortBy { x => x.passTime }.sliding(2,1)
+      //去掉条件过滤，后续用的时候在去过滤，用于找到卡点之间正常的通过时间
+//      .filter(pairlist=> {
+//      pairlist.head.cid != pairlist.last.cid &&(pairlist.last.passTime - pairlist.head.passTime) / 60000 < 30 && (pairlist.last.passTime - pairlist.head.passTime) / 1000 > 3
+//    })
+      .map(x=>BayPair(x.head.cid,x.last.cid,x.head.passTime,x.last.passTime,x.last.passTime-x.head.passTime))
   }
   //conf  获取配置文件
   /**
@@ -171,7 +180,7 @@ object DataBaseFunction {
 
     val pairResult = single.countBayPair(pair)
     //保存卡点对 格式 short-short,int,long
-    pairResult.map(f=>f._1._1+"-"+f._1._2+","+f._2+","+","+f._3).repartition(1).saveAsTextFile(path)
+    pairResult.map(f=>f._1._1+"-"+f._1._2+","+f._2).repartition(5).saveAsTextFile(path)
   }
 
 

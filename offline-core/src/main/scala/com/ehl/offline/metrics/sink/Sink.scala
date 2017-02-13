@@ -17,7 +17,7 @@
 
 package com.ehl.offline.metrics.sink
 
-private trait Sink {
+trait Sink {
   def start(): Unit
   def stop(): Unit
   def report(): Unit

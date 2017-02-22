@@ -18,6 +18,8 @@ class EhlConfiguration extends Cloneable with Serializable{
     }
   }
 
+  def toMap():Map[String,String]=settings.toMap
+
   def getStartWithNameMap(name:String):Map[String,String]={
     val kvs = for{(k,v)<- settings
                   if k.startsWith(name)}yield {(k,v)}

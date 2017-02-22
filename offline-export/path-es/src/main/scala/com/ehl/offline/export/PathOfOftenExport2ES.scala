@@ -36,10 +36,19 @@ object PathOfOftenExport2ES extends AbstractSparkWithEhl with ESConfConstant{
 //    sql.read.parquet(args(0))
     val load = sql.read
       .parquet(args(0))
-      load.map(f=>{
+      .map(f=>{
         val numb_plate = f.getString(0).split("-")
         PathOfOften(numb_plate(0),numb_plate(1).toInt,f.getString(1),f.getString(2),f.getString(3),f.getInt(4))
-      }).toDF().saveToEs(ehlConf.get(exportPathIndexType))
+      })
+  //TODO add top5
+//    .groupBy(f=>f.numb+"-"+f.plate_type).mapValues(values=>values.toSeq.sortWith((f1,f2)=>f1.num>f2.num).take(5))
+//    .flatMap(f=>f._2)
+    .toDF()
+      load.schema
+      load.show(10,false)
+//        load.saveToEs()
+//    println(ehlConf.get(exportPathIndexType))
+        load.saveToEs(ehlConf.get(exportPathIndexType))
 
   })
 }

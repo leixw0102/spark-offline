@@ -7,17 +7,17 @@ import org.joda.time.DateTime
 /**
   * Created by 雷晓武 on 2016/12/14.
   */
-case class PathOfOftenBase(numb_plateType:String,cids:String,start:String,end:String){
-  override def toString=numb_plateType+","+cids+","+start+","+end
-//  val groupByKey = (numb_plateType,cids)
+case class PathOfOftenBase(numb_plateType:String,cids:String,start:String,end:String,times:String){
+  override def toString=numb_plateType+","+cids+","+start+","+end+","+times
+  val groupByKey = (numb_plateType,cids,start,end)
 }
 
-case class PathOfOftenBaseNumber(numb_plateType:String,cids:String,start:String,end:String,num:Int){
+case class PathOfOftenBaseNumber(numb_plateType:String,cids:String,start:String,end:String,num:Int,times:String){
   val defaultGroupKey = numb_plateType
 
   val defaultSortKey = num
 
-  override def toString=numb_plateType+","+cids+","+start+","+end+","+num
+  override def toString=numb_plateType+","+cids+","+start+","+end+","+num+","+times
 }
 
 
@@ -51,18 +51,30 @@ class PathOfOftenFunction extends Serializable{
       val array = scala.collection.mutable.ArrayBuffer[PathOfOftenBase]()
       for (time_cid<-time_cid_array){
         val cids = for(temp<-time_cid.split("`");cid = temp.split("-")(1)) yield{ cid}
+        val times = for(temp<-time_cid.split("`");time = temp.split("-")(0)) yield{ time}
         //TODO add start of trip and end of trip
         val tcs = time_cid.split("`")
         val startTime = getStartTimePathOfOftenForTimeWithThreshold((tcs.head.split("-")(0)).toLong)
         val endTime = getEndTimePathOfOftenForTimeWithThreshold((tcs.last.split("-")(0)).toLong)
-        array +=PathOfOftenBase(numb_plateType,cids.mkString("-"),startTime,endTime)
+//        array +=PathOfOftenBase(numb_plateType,cids.mkString("-"),startTime,endTime,times.mkString("-"))
+        array +=PathOfOftenBase(numb_plateType,cids.mkString("-"),startTime,endTime,times.mkString("-"))
       }
       array
     }) //加上时间进行分组
       .flatMap(f=>f)
-      .map(f=>(f,1))
-      .reduceByKey(_+_)
-      .map(f=>PathOfOftenBaseNumber(f._1.numb_plateType,f._1.cids,f._1.start,f._1.end,f._2))
+//        .map(f=>(f.groupByKey,1))
+//        .reduceByKey(_+_)
+//        .map(f=>PathOfOftenBaseNumber(f._1._1,f._1._2,f._1._3,f._1._4,f._2))
+      .map(f=>(f.groupByKey,f.times))
+
+        .groupByKey().mapValues(f=>{
+      val size = f.size
+      val tsCombiner = f.mkString("`")
+      (tsCombiner,size)
+    })
+////      .reduceByKey(_+_)
+      .map(f=>PathOfOftenBaseNumber(f._1._1,f._1._2,f._1._3,f._1._4,f._2._2,f._2._1))
+    //TODO 取top5暂时删掉
       .groupBy(f=>f.defaultGroupKey).mapValues(values=>values.toSeq.sortWith((f1,f2)=>f1.num>f2.num).take(5))
           .flatMap(f=>f._2).toDF()
 

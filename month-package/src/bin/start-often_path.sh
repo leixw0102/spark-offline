@@ -1,7 +1,18 @@
 #!/bin/sh
 main_class=com.ehl.offline.month.EhlPathOfOftenBusinessSpark
 #currentDay=`date +%Y-%m-%d`
-yesterday=`date -d '-1 day' +%Y-%m-%d`
+
+yesterday=$1
+if [ "$yesterday" = "" ]
+then
+  echo "dmin is not set!"
+  yesterday=`date -d '-1 day' +%Y-%m-%d`
+#else
+#  echo "dmin is set !"
+#
+fi
+
+#yesterday=`date -d '-1 day' +%Y-%m-%d`
 base_dir=$(dirname $0)/..
 cores=5
 memory=10g

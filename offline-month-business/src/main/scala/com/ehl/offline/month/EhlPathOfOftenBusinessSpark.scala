@@ -25,17 +25,17 @@ object EhlPathOfOftenBusinessSpark extends AbstractMonth with PathOfOftenConfCon
     */
   override def getSparkAppName: String = "the path of the often by leixw"+new Date().toLocaleString
 
-//  /**
-//    * init conf
-//    *
-//    * @return
-//    */
-//  override def initEhlConfig: EhlConfiguration = {
-//    val fromSystem = System.getProperty("month_business","month_business.conf")
-//    val conf= new EhlConfiguration().addResource(fromSystem)
-//    conf.foreach()
-//    conf
-//  }
+  /**
+    * init conf
+    *
+    * @return
+    */
+  override def initEhlConfig: EhlConfiguration = {
+    val fromSystem = System.getProperty("month_business","month_business.conf")
+    val conf= new EhlConfiguration().addResource(fromSystem)
+    conf.foreach()
+    conf
+  }
 
   /**
     *  长走路线

@@ -122,34 +122,37 @@ object MatchingDataWithSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
     .toDF("number_type","baseStationNumber","ts")
 
 
-    val dd = match3(result.collect,mobileDataRdd)
+    val dd = match3(result.collect,mobileDataRdd,ehlConf.getInt("mobile.time.between.float",180))
     dd.cache()
 
 //修改(a,b),count-->a group b--top
+    ////numb_type,imsi,imei,ts,ts1
     val yesterday=new DateTime(currentDate).plusDays(-1).toString("yyyy-MM-dd")
     val imsi =dd.map(f=>((f._1,f._2),1)).reduceByKey(_+_).map(f=>(f._1._1,f._1._2,f._2)).groupBy(f=>f._1).mapValues(f=>
     {
 
       f.toList.sortWith((a,b)=>a._3>b._3).take(3).map(f=>f._2+"-"+f._3).mkString(",")
-
+////      f.map(f=>f._2+"-"+f._3).mkString(",")
     })
       .toDF()
+//    val imsi = dd.map(f=>((f._1,f._2),())).reduce()
       imsi.cache
       imsi.write.parquet(MessageFormat.format(ehlConf.get("hdfs.imsi.path"),yesterday))
-    val imei=dd.map(f=>((f._1,f._3),1)).reduceByKey(_+_).map(f=>(f._1._1,f._1._2,f._2)).groupBy(f=>f._1).mapValues(f=>
-    {
-      f.toList.sortWith((a,b)=>a._3>=b._3).take(3).map(f=>f._2+"-"+f._3).mkString(",")
-    })
-      .toDF()
-      imei.cache
-      imei.write.parquet(MessageFormat.format(ehlConf.get("hdfs.imei.path"),yesterday))
+//    val imei=dd.map(f=>((f._1,f._3),1)).reduceByKey(_+_).map(f=>(f._1._1,f._1._2,f._2)).groupBy(f=>f._1).mapValues(f=>
+//    {
+//      f.toList.sortWith((a,b)=>a._3>=b._3).take(3).map(f=>f._2+"-"+f._3).mkString(",")
+////      f.map(f=>f._2+"-"+f._3).mkString(",")
+//    })
+//      .toDF()
+//      imei.cache
+//      imei.write.parquet(MessageFormat.format(ehlConf.get("hdfs.imei.path"),yesterday))
 
 
     //TODO save to oracle
     saveToDb(imsi,"INSERT INTO T_ITGS_IMSI_MAPPING(BH,HPHM,HPZL,IMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)",currentDate,ehlConf)
 
     //TODO save imei to oracle
-    saveToDb(imsi,"INSERT INTO T_ITGS_EMSI_MAPPING(BH,HPHM,HPZL,EMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)",currentDate,ehlConf)
+//    saveToDb(imei,"INSERT INTO T_ITGS_EMSI_MAPPING(BH,HPHM,HPZL,EMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)",currentDate,ehlConf)
 
   })
   def getFilterQuery(ts:Long):String={
@@ -172,7 +175,7 @@ object MatchingDataWithSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
       .foreachPartition(insertDataFunc(_,sql,conf))
   }
 
-  def match3(shareTracker:Array[Row],mobile:DataFrame)={
+  def match3(shareTracker:Array[Row],mobile:DataFrame,floatingSeconds:Int=180)={
     //share tracker [num_type,cid,ts]
     //mobile [ts1,imsi,imei,cid]
 
@@ -192,8 +195,8 @@ object MatchingDataWithSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
       val ts = f._3
       val currentTime = new DateTime(ts)
       val timestamp = f._4.toLong
-      timestamp>=currentTime.plusSeconds(-10).toDate.getTime && timestamp <= currentTime.plusSeconds(10).toDate.getTime
-    }).map(f=>(f._1,f._5,f._6))
+      timestamp>=currentTime.plusSeconds(-floatingSeconds).toDate.getTime && timestamp <= currentTime.plusSeconds(floatingSeconds).toDate.getTime
+    }).map(f=>(f._1,f._5,f._6,f._3,f._4))
   }
 val batchSize=100
 

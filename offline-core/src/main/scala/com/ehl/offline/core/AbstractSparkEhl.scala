@@ -25,13 +25,15 @@ abstract class AbstractSparkEhl extends SparkOp with App{
 //    sc.hadoopConfiguration.addResource(core_site)
 //    sc.hadoopConfiguration.addResource(new org.apache.hadoop.fs.Path(h_file.normalize().toAbsolutePath.toString))
 //    println(h_file.normalize().toAbsolutePath.toString)
-//    println(sc.hadoopConfiguration.get("dfs.nameservices")+"\t"+sc.hadoopConfiguration.get("fs.defaultFS")+"\t"+sc.hadoopConfiguration.get("ha.zookeeper.quorum") +"\t"+sc.hadoopConfiguration.get("dfs.namenode.rpc-address.cluster1.nn1"))
+    println(sc.hadoopConfiguration.get("dfs.nameservices")+"\t"+sc.hadoopConfiguration.get("fs.defaultFS")+"\t"+sc.hadoopConfiguration.get("ha.zookeeper.quorum") +"\t"+sc.hadoopConfiguration.get("dfs.namenode.rpc-address.cluster1.nn1"))
   }
 
    def operateSpark(args:Array[String],ehlConf:EhlConfiguration)(op:SparkContext=>Unit){
 
     //first
     val conf=new SparkConf().setAppName(getSparkAppName)//.setMaster("local[*]")
+     conf.set("spark.serializer","org.apache.spark.serializer.KryoSerializer")
+//     conf.set("","")
     //    val session= SparkSession.builder().config(conf).getOrCreate()
 
     val session = new SparkContext(conf)

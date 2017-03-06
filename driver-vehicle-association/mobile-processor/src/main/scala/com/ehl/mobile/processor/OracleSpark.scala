@@ -2,12 +2,12 @@ package com.ehl.mobile.processor
 
 import java.sql.{Connection, DriverManager, PreparedStatement, Timestamp}
 import java.text.MessageFormat
-import java.util.{Date, Properties}
+import java.util.{Date}
 
 import com.ehl.mobile.utils.UUIDUtil
 import com.ehl.offline.common.EhlConfiguration
 import com.ehl.offline.core.AbstractSparkEhl
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.joda.time.DateTime
 
 
@@ -27,44 +27,52 @@ object OracleSpark extends AbstractSparkEhl  with App{
   override def getSparkAppName: String = "mobile match with 1 "
 
   override def initEhlConfig: EhlConfiguration = {
-    new EhlConfiguration().addResource("data.conf")
+    new EhlConfiguration().addResource("mv.conf")
   }
+
+//  def saveToDb(df:DataFrame,sql:String,date:Date,conf:EhlConfiguration)={
+//    df.map(f=>{
+//      val num_type = f.getString(0).split("-")
+//      val num = num_type(0)
+//      val t = num_type(1)
+//      val ps = f.getString(1).split(",")
+//      ps.map(data=>{
+//        val p_c = data.split("-")
+//        Row(num,t,p_c(0),p_c(1).toInt,new Timestamp(date.getTime))
+//      })
+//    }).flatMap(f=>f)
+//      .foreachPartition(insertDataFunc(_,sql,conf))
+//  }
+
 
   def saveToDb(df:DataFrame,sql:String,date:Date,conf:EhlConfiguration)={
-    df.map(f=>{
-      val num_type = f.getString(0).split("-")
-      val num = num_type(0)
-      val t = num_type(1)
-      val ps = f.getString(1).split(",")
-      ps.map(data=>{
-        val p_c = data.split("-")
-        Row(num,t,p_c(0),p_c(1).toInt,new Timestamp(date.getTime))
-      })
-    }).flatMap(f=>f)
-      .foreachPartition(insertDataFunc(_,sql,conf))
+    df.map(f=> {
+//      val num_type = f.getString(0).split("-")
+//      val num = num_type(0)
+//      val t = num_type(1)
+//      Row(num, t, f.getString(1), f.getInt(2), new Timestamp(date.getTime))
+      Row(f.getString(0),f.getString(1),f.getString(2),f.getInt(3),new Timestamp(date.getTime))
+    }).foreachPartition(insertDataFunc(_,sql,conf))
   }
-
-
-
 
   operateSpark(args ,ehlConf)(op=> {
 
     val date = DateTime.now()
       val yesterday= date.plusDays(-1).toString("yyyy-MM-dd")
-    val imsiSql="INSERT INTO T_ITGS_IMSI_MAPPING(BH,HPHM,HPZL,IMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)"
-    val imeiSql="INSERT INTO T_ITGS_EMSI_MAPPING(BH,HPHM,HPZL,EMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)"
+    val imsiSql="INSERT INTO T_ITGS_IMSI_MAPPING_NEW(BH,HPHM,HPZL,IMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)"
+//    val imeiSql="INSERT INTO T_ITGS_EMSI_MAPPING(BH,HPHM,HPZL,EMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)"
     val session = new SQLContext(op)
     import session.implicits._
     args(0) match {
       case "ALL" =>{
-        saveToDb(session.read.parquet(MessageFormat.format(ehlConf.get("hdfs.imsi.path"),yesterday)),imsiSql,date.toDate,ehlConf)
-        saveToDb(session.read.parquet(MessageFormat.format(ehlConf.get("hdfs.imei.path"),yesterday)),imeiSql,date.toDate,ehlConf)
+        saveToDb(session.read.parquet(MessageFormat.format(ehlConf.get("result.hdfs.path"),yesterday)),imsiSql,date.toDate,ehlConf)
+//        saveToDb(session.read.parquet(MessageFormat.format(ehlConf.get("hdfs.imei.path"),yesterday)),imeiSql,date.toDate,ehlConf)
       }
       case "IMSI" =>{
         saveToDb(session.read.parquet(MessageFormat.format(ehlConf.get("hdfs.imsi.path"),yesterday)),imsiSql,date.toDate,ehlConf)
       }
       case "IMEI" =>{
-        saveToDb(session.read.parquet(MessageFormat.format(ehlConf.get("hdfs.imei.path"),yesterday)),imeiSql,date.toDate,ehlConf)
+//        saveToDb(session.read.parquet(MessageFormat.format(ehlConf.get("hdfs.imei.path"),yesterday)),imeiSql,date.toDate,ehlConf)
       }
       case _=>None
     }

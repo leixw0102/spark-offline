@@ -74,6 +74,7 @@ class PathOfOftenFunction extends Serializable{
     })
 ////      .reduceByKey(_+_)
       .map(f=>PathOfOftenBaseNumber(f._1._1,f._1._2,f._1._3,f._1._4,f._2._2,f._2._1))
+//        .toDF()
     //TODO 取top5暂时删掉
       .groupBy(f=>f.defaultGroupKey).mapValues(values=>values.toSeq.sortWith((f1,f2)=>f1.num>f2.num).take(5))
           .flatMap(f=>f._2).toDF()

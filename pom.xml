@@ -15,6 +15,7 @@
         <module>offline-export</module>
         <module>month-package</module>
         <module>driver-vehicle-association</module>
+        <module>tools</module>
     </modules>
     <distributionManagement>
         <repository>

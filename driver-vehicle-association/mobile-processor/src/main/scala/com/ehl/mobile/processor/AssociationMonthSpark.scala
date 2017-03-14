@@ -49,6 +49,30 @@ object AssociationMonthSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
     new EhlConfiguration().addResource("mv.conf")
   }
 
+  def deleteDb(sql: String,conf:EhlConfiguration) = {
+    var conn: Connection = null
+    var psmt: PreparedStatement = null
+    try {
+      Class.forName(conf.get("db.default.driver")).newInstance()
+      conn = DriverManager.getConnection(conf.get("db.default.url"), conf.get("db.default.user"), conf.get("db.default.password"))
+      psmt = conn.prepareStatement(sql)
+      psmt.executeUpdate()
+
+    } catch {
+      case e: Exception => {
+        e.printStackTrace()
+
+      }
+    } finally {
+      if (psmt != null) {
+        psmt.close()
+      }
+      if (conn != null) {
+        conn.close()
+      }
+    }
+  }
+
   operateSpark(args,ehlConf)(op=>{
     println(op.hadoopConfiguration.get("dfs.nameservices")+"\t"+op.hadoopConfiguration.get("fs.defaultFS")+"\t"+op.hadoopConfiguration.get("ha.zookeeper.quorum") +"\t"+op.hadoopConfiguration.get("dfs.namenode.rpc-address.cluster1.nn1"))
     val currentDate = DateTime.now()
@@ -122,6 +146,9 @@ object AssociationMonthSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
 //    }).toDF()
 
     monthInput.write.option("spark.sql.parquet.compression.codec","snappy").parquet(MessageFormat.format(ehlConf.get("result.hdfs.path"),currentDate.plusDays(-1).toString("yyyy-MM-dd")))
+
+    deleteDb("delete from T_ITGS_IMSI_MAPPING",ehlConf)
+
     saveToDb(monthInput,"INSERT INTO T_ITGS_IMSI_MAPPING(BH,HPHM,HPZL,IMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)",currentDate.toDate,ehlConf)
 
 //      .saveAsTextFile("/app/test/"+args(0))
@@ -132,7 +159,8 @@ object AssociationMonthSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
   })
 
   /**
-  num,type,imsi,count
+    * num,type,imsi,count
+    *
     * @param df
     * @param sql
     * @param date

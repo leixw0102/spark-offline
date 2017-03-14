@@ -19,12 +19,13 @@ case class MobileCarBaseData(timestamp:Long,imsi:String,imei:String,baseStationN
 /**
   * Created by 雷晓武 on 2017/2/22.
   */
-object Mobile2HbaseSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf with App{
-  override def getInputs(conf: EhlConfiguration, hdfsConf: Configuration): Array[String] = {
-    val path = conf.get("mobile.hdfs.path")
-    val yesterday = DateTime.now().plusDays(-1).toString("yyyyMMdd")
-    Array(MessageFormat.format(path,yesterday))
-  }
+object Mobile2HbaseSpark extends AbstractSparkEhl with App{
+//  override def getInputs(conf: EhlConfiguration, hdfsConf: Configuration): Array[String] = {
+////    val path = conf.get("mobile.hdfs.path")
+////    val yesterday = DateTime.now().plusDays(-1).toString("yyyyMMdd")
+////    Array(MessageFormat.format(path,yesterday))
+////    Array("/app/data/data-mobile-01-21")
+//  }
 
   /**
     * 获取spark app name
@@ -34,15 +35,21 @@ object Mobile2HbaseSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf w
   override def getSparkAppName: String = "mobile data of hdfs to hbase"
 
   override def initEhlConfig: EhlConfiguration = {
-    val file = "mobile.conf";//System.getProperty("","mobile.conf")
+    val file = System.getProperty("mobile","mobile.conf")
     new EhlConfiguration().addResource(file)
   }
 
 
   operateSpark(args ,ehlConf )(sc=>{
+    val path = ehlConf.get("mobile.hdfs.path")
+    val realPath = if(args.length==0) {
+      MessageFormat.format(path,DateTime.now().plusDays(-1).toString("yyyyMMdd"))
+    }else{
+      MessageFormat.format(path,args(0))
+    }
 
     val cidMap=readFile
-    val values = sc.wholeTextFiles(getInputs(ehlConf).mkString(","),ehlConf.getInt("spark.partation",20))
+    val values = sc.wholeTextFiles(realPath,ehlConf.getInt("spark.partation",20))
       //values
       .map(f=>f._2).map(f=>f.split("\n")).flatMap(f=>f)
 
@@ -63,10 +70,10 @@ object Mobile2HbaseSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf w
       .map(baseData=>{
         val put = new Put(Bytes.toBytes(baseData.cid+"-"+baseData.timestamp))
         put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("ts"),Bytes.toBytes(baseData.timestamp))
-        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("imsi"),Bytes.toBytes(baseData.timestamp))
-        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("imei"),Bytes.toBytes(baseData.timestamp))
-        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("mobile_cid"),Bytes.toBytes(baseData.timestamp))
-        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("cid"),Bytes.toBytes(baseData.timestamp))
+        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("imsi"),Bytes.toBytes(baseData.imsi))
+        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("imei"),Bytes.toBytes(baseData.imei))
+        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("mobile_cid"),Bytes.toBytes(baseData.baseStationNumber))
+        put.addColumn(Bytes.toBytes("data"),Bytes.toBytes("cid"),Bytes.toBytes(baseData.cid))
         (new ImmutableBytesWritable(put.getRow),put)
       }).saveAsHadoopDataset(jobConf)
 //      .toDF()

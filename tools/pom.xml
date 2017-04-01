@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>kettle-web</module>
+        <module>hive-sql</module>
     </modules>
     <artifactId>tools</artifactId>
 

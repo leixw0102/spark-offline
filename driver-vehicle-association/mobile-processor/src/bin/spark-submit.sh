@@ -21,6 +21,10 @@ if [ -z "$DATA_OPTS" ]; then
   DATA_OPTS="-Ddata=$base_dir/conf/data.conf"
 fi
 
+if [ -z "$MV_OPTS" ]; then
+  MV_OPTS="-Dmv=$base_dir/conf/mv.conf"
+fi
+
 if [ -z "$BASE_DATA" ]; then
   BASE_DATA="-Dbase_data=$base_dir/conf/base_dictionary.dat"
 fi
@@ -29,7 +33,7 @@ fi
 
 
 
-java_options="$DATA_OPTS $BASE_DATA"
+java_options="$DATA_OPTS $MV_OPTS"
 #standalone
 master=$8
 #yarn clustor

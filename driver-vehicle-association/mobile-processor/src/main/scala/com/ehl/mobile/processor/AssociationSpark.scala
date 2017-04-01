@@ -29,7 +29,7 @@ object AssociationSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf  w
   override def getSparkAppName: String = "m-v association "
 
   override def initEhlConfig: EhlConfiguration = {
-    new EhlConfiguration().addResource("mv.conf")
+    new EhlConfiguration().addResource(System.getProperty("mv","mv.conf"))
   }
   System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
   operateSpark(args ,ehlConf)(sc=>{

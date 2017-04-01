@@ -46,7 +46,7 @@ object AssociationMonthSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
   override def getSparkAppName: String = "month association m-v"
 
   override def initEhlConfig: EhlConfiguration = {
-    new EhlConfiguration().addResource("mv.conf")
+    new EhlConfiguration().addResource(System.getProperty("mv","mv.conf"))
   }
 
   def deleteDb(sql: String,conf:EhlConfiguration) = {
@@ -74,6 +74,7 @@ object AssociationMonthSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
   }
 
   operateSpark(args,ehlConf)(op=>{
+    ehlConf.foreach()
     println(op.hadoopConfiguration.get("dfs.nameservices")+"\t"+op.hadoopConfiguration.get("fs.defaultFS")+"\t"+op.hadoopConfiguration.get("ha.zookeeper.quorum") +"\t"+op.hadoopConfiguration.get("dfs.namenode.rpc-address.cluster1.nn1"))
     val currentDate = DateTime.now()
     val sqlContext  = new SQLContext(op)
@@ -145,7 +146,7 @@ object AssociationMonthSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
 //
 //    }).toDF()
 
-    monthInput.write.option("spark.sql.parquet.compression.codec","snappy").parquet(MessageFormat.format(ehlConf.get("result.hdfs.path"),currentDate.plusDays(-1).toString("yyyy-MM-dd")))
+    monthInput.write.option("spark.sql.parquet.compression.codec","snappy").parquet(MessageFormat.format(ehlConf.get("hdfs.imsi.path"),currentDate.plusDays(-1).toString("yyyy-MM-dd")))
 
     deleteDb("delete from T_ITGS_IMSI_MAPPING",ehlConf)
 

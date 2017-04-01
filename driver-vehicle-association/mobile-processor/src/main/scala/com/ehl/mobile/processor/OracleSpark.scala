@@ -27,7 +27,7 @@ object OracleSpark extends AbstractSparkEhl  with App{
   override def getSparkAppName: String = "mobile match with 1 "
 
   override def initEhlConfig: EhlConfiguration = {
-    new EhlConfiguration().addResource("mv.conf")
+    new EhlConfiguration().addResource(System.getProperty("mv","mv.conf"));
   }
 
 //  def saveToDb(df:DataFrame,sql:String,date:Date,conf:EhlConfiguration)={

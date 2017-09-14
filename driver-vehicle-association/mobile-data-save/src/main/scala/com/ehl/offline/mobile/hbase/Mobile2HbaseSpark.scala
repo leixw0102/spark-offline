@@ -14,6 +14,13 @@ import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 
+/**
+  *
+  * @param timestamp
+  * @param imsi
+  * @param imei
+  * @param baseStationNumber
+  */
 case class MobileBaseData(timestamp:Long,imsi:String,imei:String,baseStationNumber:Long)
 case class MobileCarBaseData(timestamp:Long,imsi:String,imei:String,baseStationNumber:Long,cid:Long)
 /**
@@ -43,16 +50,16 @@ object Mobile2HbaseSpark extends AbstractSparkEhl with App{
   operateSpark(args ,ehlConf )(sc=>{
     val path = ehlConf.get("mobile.hdfs.path")
     val realPath = if(args.length==0) {
-      MessageFormat.format(path,DateTime.now().plusDays(-1).toString("yyyyMMdd"))
+      MessageFormat.format(path,DateTime.now().plusDays(-1).toString("yyyyMMdd"))+"*"
     }else{
-      MessageFormat.format(path,args(0))
+      MessageFormat.format(path,args(0))+"*"
     }
 
     val cidMap=readFile
     val values = sc.wholeTextFiles(realPath,ehlConf.getInt("spark.partation",20))
       //values
-      .map(f=>f._2).map(f=>f.split("\n")).flatMap(f=>f)
-
+      .map(f=>f._2).map(f=>f.split("\n")).flatMap(f=>f).filter(f=>f.split(",",18).length ==18)
+//    val values = sc.textFile(realPath,ehlConf.getInt("spark.partation",20))
     val conf = HBaseConfiguration.create()
     //设置zooKeeper集群地址，也可以通过将hbase-site.xml导入classpath，但是建议在程序里这样设置
     conf.set("hbase.zookeeper.quorum",ehlConf.get("hbase.zookeeper.quorum"))
@@ -62,8 +69,12 @@ object Mobile2HbaseSpark extends AbstractSparkEhl with App{
     jobConf.setOutputFormat(classOf[TableOutputFormat])
     jobConf.set(TableOutputFormat.OUTPUT_TABLE, ehlConf.get("hbase.table"))
     values.map(data=>{
-      val spliter = data.split(",",25)
-      MobileBaseData(spliter(0).toLong*1000,spliter(6),spliter(7),spliter(11).toLong)
+      val spliter = data.split(",",18)
+//      if(spliter.length!=18) {
+//        println(data)
+//      }
+//      println("---------------------")
+        MobileBaseData(spliter(0).toLong * 1000, spliter(6), spliter(7), spliter(11).toLong)
     })
       .filter(f=>cidMap.contains(f.baseStationNumber+""))
       .map(f=>MobileCarBaseData(f.timestamp,f.imsi,f.imei,f.baseStationNumber,cidMap.getOrElse(f.baseStationNumber+"","0").toLong))

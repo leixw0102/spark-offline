@@ -37,6 +37,10 @@ object AssociationSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf  w
     println(sc.hadoopConfiguration.get("dfs.nameservices")+"\t"+sc.hadoopConfiguration.get("fs.defaultFS")+"\t"+sc.hadoopConfiguration.get("ha.zookeeper.quorum") +"\t"+sc.hadoopConfiguration.get("dfs.namenode.rpc-address.cluster1.nn1"))
     val sqlContext = new SQLContext(sc)
     import sqlContext.implicits._
+
+    //register func
+    sqlContext.udf.register("concat",(a:String,b:Int)=>a+"-"+b);
+
     val share=readFile
     val shareCardsSet=share.values.map(f=>f.toLong).toSet
 
@@ -50,24 +54,43 @@ object AssociationSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf  w
       .filter(f => ObjectUtils.noEqual(f(3).split("=")(1), "00000000"))
       .filter(f => f(3).split("=")(1) != None)
       .map(f => convertToTracker(f))
-      .filter(f=>shareCardsSet.contains(f.cid))
-      .toDF()
+        .filter(f=>f!=null)
+      .filter(f=>shareCardsSet.contains(f.cid)).repartition(15)
+      .toDF()//.cache().registerTempTable("gc")
 //    vechile.show(20,false)
-    val mPath=MessageFormat.format(ehlConf.get("mobile.hdfs.path"),inputDate.replaceAll("-",""))
+    val mPath=MessageFormat.format(ehlConf.get("mobile.hdfs.path"),"*"+inputDate.replaceAll("-",""))
     println("mobile path ="+mPath)
     val mobileDataRdd=sc.wholeTextFiles(mPath,15)
-      .map(f=>f._2).map(f=>f.split("\n")).flatMap(f=>f).map(data=>{
-      val spliter = data.split(",",25)
-      MobileBaseData2(spliter(0).toLong*1000,spliter(6),spliter(7),spliter(11).toLong)
+      .map(f=>f._2).map(f=>f.split("\n")).flatMap(f=>f)
+      .filter(f=>f.split(",",18).length ==18)
+      .map(data=>{
+        val spliter = data.split(",",18)
+        MobileBaseData2(spliter(0).toLong*1000,spliter(6),spliter(7),spliter(11).toLong)
     })
       .filter(f=>share.contains(f.baseStationNumber+"")).map(f=>MobileBaseData2(f.timestamp,f.imsi,f.imei,share.getOrElse(f.baseStationNumber+"","0").toLong))
-//      .toDF()
+
+      //.toDF()//.cache().registerTempTable("mobile")
 //    println(mobileDataRdd.count())
     val result = matchMV(vechile.collect(),mobileDataRdd,ehlConf.getInt("mobile.time.between.float",120))
-//    result.saveAsTextFile(MessageFormat.format(ehlConf.get("mv.association.hdfs.save.path"),inputDate))
-//    result.saveAsTextFile(MessageFormat.format(ehlConf.get("mv.association.hdfs.save.path"),inputDate))
       .toDF("num_type","cid","imsi","imei")
 //      println(result.count)
+//      sqlContext.sql("select concat(a.numb,a.plateType),a.cid,a.passTime,b.timestamp,b.imsi,b.imei  from gc a inner join mobile b on a.cid=b.baseStationNumber and b.baseStationNumber !=0")
+//            .filter("imsi is not null").filter("imei is not null")
+//        .rdd.filter(f=>{
+//        val floatingSeconds= ehlConf.getInt("mobile.time.between.float",120)
+//        val ts = f.getLong(2)
+//        val currentTime = new DateTime(ts)
+//        val timestamp = f.getLong(3)
+//        timestamp>=currentTime.plusSeconds(-floatingSeconds).toDate.getTime && timestamp <= currentTime.plusSeconds(floatingSeconds).toDate.getTime
+//      })
+//        .map(f=>(f.getString(0),f.getLong(1),f.getString(4),f.getString(5))).toDF("num_type","cid","imsi","imei")
+//              .filter{
+//                val floatingSeconds= ehlConf.getInt("mobile.time.between.float",120)
+//                val currentTime = new DateTime($"passTime")
+//                $"timestamp">=currentTime.plusSeconds(-floatingSeconds).toDate.getTime && $"timestamp" <= currentTime.plusSeconds(floatingSeconds).toDate.getTime}
+//          .select("numb","plateType","cid","imsi","imei").map(f=>
+//        (f.getString(0)+"-"+f.getString(1),f.getString(2),f.getString(3),f.getString(4))).toDF("num_type","cid","imsi","imei")
+//       test.count()
       .write.option("spark.sql.parquet.compression.codec","snappy")
       .parquet(MessageFormat.format(ehlConf.get("mv.association.hdfs.save.path"),inputDate))
 
@@ -76,15 +99,22 @@ object AssociationSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf  w
   })
 
 
+
+
   def convertToTracker(f:Array[String]):Tracker2={
     val timeString = (f(1).split("="))(1)
     val passtime = toDate(timeString,f)
-    val t=Tracker2(passtime._1,
-      f(3).split("=")(1),
-      toInt(f(4).split("=")(1),f),
-      toLong(f(15).split("=")(1),f))
+    try {
+      val t = Tracker2(passtime._1,
+        f(3).split("=")(1),
+        toInt(f(4).split("=")(1), f),
+        toLong(f(15).split("=")(1), f))
 
-    t
+      t
+    }catch {
+      case e:Exception=>"error "+e.getLocalizedMessage;
+        null;
+    }
 
   }
 

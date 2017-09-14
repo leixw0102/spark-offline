@@ -16,7 +16,7 @@ fi
 base_dir=$(dirname $0)/..
 cores=5
 memory=10g
-master=spark://host225:7077
+master=spark://host51:7077
 service_name="ehl-offline-path-often"
 executeJar=$base_dir/lib/offline-month-business-1.0-SNAPSHOT.jar
 args="/app/pathOfOften/${yesterday}"

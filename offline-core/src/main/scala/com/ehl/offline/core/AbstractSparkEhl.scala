@@ -3,6 +3,7 @@ package com.ehl.offline.core
 
 import com.ehl.offline.common.EhlConfiguration
 import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.scheduler.SparkListener
 import org.apache.spark.{SparkConf, SparkContext}
 
 
@@ -44,11 +45,13 @@ abstract class AbstractSparkEhl extends SparkOp with App{
       setHadoopConfig(session)
 
       op(session)
+      session.addSparkListener(new SparkListener {})
     }catch{
       case ex:Exception=>ex.printStackTrace()
     } finally{
       //end
       session.stop()
+
     }
   }
 

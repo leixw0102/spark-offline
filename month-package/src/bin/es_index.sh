@@ -1,6 +1,6 @@
 #!/bin/sh
 yesterday=`date -d '-1 day' +%Y-%m-%d`
-esIp=10.150.27.248
+esIp=11.110.248.31
 createIndexAndType(){
 curl -XPOST ${esIp}:9200/path_of_often_index${yesterday} -d '{
     "settings" : { "number_of_shards" : 10,"number_of_replicas" : 2 },

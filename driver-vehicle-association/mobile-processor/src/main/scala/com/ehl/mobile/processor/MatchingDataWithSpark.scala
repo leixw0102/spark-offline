@@ -25,6 +25,7 @@ import org.joda.time.format.DateTimeFormat
 //时间戳,事件类型(27),用户号码,用户归宿局代码,对方号码,对方号码归属地,Imsi,
 //Imei(前14位),活动地区,交换机ID,位置区码,基站号,基站经度,基站纬度,上个位置区,
 //上个小区,上个基站经度,上个基站纬度
+//1499058797,27,,,,,460025540828626,00000000000000,,,0530,21000,115.462070,35.288680,,,,
 case class MobileBaseData(timestamp:Long,imsi:String,imei:String,baseStationNumber:Long)
 
 //case class Tracker(number_type:String,cid:Long,time:Array[Long])
@@ -36,6 +37,7 @@ case class MobileBaseData(timestamp:Long,imsi:String,imei:String,baseStationNumb
 /**
   * Created by 雷晓武 on 2017/2/14.
   */
+@Deprecated
 object MatchingDataWithSpark extends AbstractSparkEhl with EhlInputConfForHdfsConf with BaseConfigConstant with App{
 
   override def getInputs(conf: EhlConfiguration, hdfsConf: Configuration): Array[String] = {

@@ -11,10 +11,14 @@ import scala.reflect.ClassTag
 object App {
   
   def foo(x : Array[String]) = x.foldLeft("")((a,b) => a + b)
-  
-  def main(args : Array[String]) {
 
-    EhlMetricsSystem.createMetricsSystem
+  def test[A](f: =>A):A={
+    f
+  }
+
+  def main(args : Array[String]) {
+test(println("hello"))
+//    EhlMetricsSystem.createMetricsSystem
 //   println( TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES).toInt)
 //    val c:Consumer[Animal,Bird] = new Consumer[Animal,Bird]()
 //    val c2:Consumer[Bird,Animal] = c

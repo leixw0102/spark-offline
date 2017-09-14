@@ -148,8 +148,8 @@ object AssociationMonthSpark extends AbstractSparkEhl with EhlInputConfForHdfsCo
 
     monthInput.write.option("spark.sql.parquet.compression.codec","snappy").parquet(MessageFormat.format(ehlConf.get("hdfs.imsi.path"),currentDate.plusDays(-1).toString("yyyy-MM-dd")))
 
-    deleteDb("delete from T_ITGS_IMSI_MAPPING",ehlConf)
-
+//    deleteDb("delete from T_ITGS_IMSI_MAPPING",ehlConf)
+    deleteDb("truncate table T_ITGS_IMSI_MAPPING",ehlConf)
     saveToDb(monthInput,"INSERT INTO T_ITGS_IMSI_MAPPING(BH,HPHM,HPZL,IMSI,MATCHNUM,UPDATETIME) VALUES ( ?,?,?,?,?,?)",currentDate.toDate,ehlConf)
 
 //      .saveAsTextFile("/app/test/"+args(0))

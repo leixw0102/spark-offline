@@ -16,7 +16,7 @@ fi
 base_dir=$(dirname $0)/..
 cores=3
 memory=4g
-master=spark://host225:7077
+master=spark://host51:7077
 service_name="ehl-path-result-2-es"
 executeJar=$base_dir/lib/path-es-1.0-SNAPSHOT.jar
 args="/app/pathOfOften/${yesterday}"
